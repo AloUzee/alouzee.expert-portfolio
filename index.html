@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моё портфолио</title>
+    <style>
+        /* --- стили полностью как в прошлом ответе, оставлены для краткости --- */
+        :root {
+            --bg: #ffffff;
+            --text: #111;
+            --card-bg: #f5f5f5;
+            --border: #e0e0e0;
+            --accent: #2563eb;
+            --shadow: 0 2px 10px rgba(0,0,0,0.05);
+            --radius: 12px;
+        }
+        /* ... вставь сюда всю CSS часть из предыдущего кода, она большая ... */
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background:var(--bg); color:var(--text); display:flex; justify-content:center; padding:2rem 1rem; min-height:100vh; }
+        .container { width:100%; max-width:560px; display:flex; flex-direction:column; align-items:center; gap:1.5rem; }
+        .profile { text-align:center; width:100%; }
+        .avatar { width:120px; height:120px; border-radius:50%; object-fit:cover; border:3px solid var(--border); box-shadow:var(--shadow); margin-bottom:0.8rem; }
+        .name { font-size:1.8rem; font-weight:600; margin-bottom:0.3rem; }
+        .bio { color:#555; font-size:1rem; line-height:1.4; max-width:400px; margin:0 auto; }
+        .social-links { display:flex; flex-wrap:wrap; justify-content:center; gap:0.8rem; margin-top:0.8rem; }
+        .social-btn { display:inline-flex; align-items:center; gap:0.3rem; text-decoration:none; background:var(--card-bg); color:var(--text); padding:0.5rem 1rem; border-radius:2rem; font-size:0.9rem; transition:0.2s; border:1px solid var(--border); }
+        .social-btn:hover { background:#eaeaea; transform:translateY(-1px); }
+        .projects { width:100%; }
+        .section-title { font-size:1.3rem; font-weight:600; margin-bottom:0.8rem; text-align:center; }
+        .project-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+        .project-card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:1rem; transition:0.2s; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:0.3rem; }
+        .project-card:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.08); }
+        .project-card h3 { font-size:1rem; font-weight:600; }
+        .project-card p { font-size:0.85rem; color:#555; flex-grow:1; }
+        .project-link { font-size:0.85rem; color:var(--accent); text-decoration:none; font-weight:500; }
+        .admin-trigger { position:fixed; bottom:20px; right:20px; width:44px; height:44px; background:var(--card-bg); border:1px solid var(--border); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.3rem; opacity:0.7; transition:0.2s; z-index:100; box-shadow:var(--shadow); }
+        .admin-trigger:hover { opacity:1; }
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); align-items:center; justify-content:center; z-index:200; }
+        .modal.active { display:flex; }
+        .modal-content { background:white; padding:2rem; border-radius:16px; width:90%; max-width:400px; box-shadow:0 20px 40px rgba(0,0,0,0.15); position:relative; }
+        .close-btn { position:absolute; top:10px; right:14px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#888; }
+        #password-input { width:100%; padding:0.7rem; margin:1rem 0; border:1px solid #ccc; border-radius:8px; }
+        .btn { background:var(--accent); color:white; border:none; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; font-weight:500; }
+        .admin-panel { display:none; margin-top:2rem; width:100%; background:#f8f8f8; padding:1.5rem; border-radius:var(--radius); position:relative; }
+        .admin-panel.active { display:block; }
+        .form-group { margin-bottom:1rem; }
+        .form-group label { display:block; font-weight:600; margin-bottom:0.3rem; }
+        .form-group input, .form-group textarea { width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:6px; }
+        .project-item { background:white; padding:1rem; border-radius:8px; margin-bottom:1rem; border:1px solid #ddd; position:relative; }
+        .remove-btn { position:absolute; top:5px; right:8px; background:#ff4444; color:white; border:none; border-radius:50%; width:24px; height:24px; font-size:0.9rem; cursor:pointer; }
+        @media (max-width:500px) { .project-grid { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="profile">
+        <img id="profile-avatar" class="avatar" src="" alt="Аватар">
+        <h1 class="name" id="profile-name"></h1>
+        <p class="bio" id="profile-bio"></p>
+        <div class="social-links" id="social-container"></div>
+    </div>
+    <div class="projects">
+        <div class="section-title">🖥️ Мои проекты</div>
+        <div class="project-grid" id="projects-container"></div>
+    </div>
+</div>
+
+<div class="admin-trigger" id="admin-btn" title="Админка">🔒</div>
+
+<div class="modal" id="password-modal">
+    <div class="modal-content">
+        <button class="close-btn" id="close-modal">&times;</button>
+        <h3>Вход в админку</h3>
+        <input type="password" id="password-input" placeholder="Пароль">
+        <button class="btn" id="submit-password">Войти</button>
+        <p id="login-error" style="color:red; margin-top:0.5rem; display:none;">Неверный пароль</p>
+    </div>
+</div>
+
+<div class="admin-panel" id="admin-panel">
+    <button id="close-admin" style="position:absolute; top:10px; right:14px; background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+    <h2>Управление портфолио</h2>
+    <div class="form-group">
+        <label>Имя</label>
+        <input type="text" id="edit-name">
+    </div>
+    <div class="form-group">
+        <label>Биография</label>
+        <textarea id="edit-bio" rows="2"></textarea>
+    </div>
+    <div class="form-group">
+        <label>Ссылка на аватар</label>
+        <input type="text" id="edit-avatar">
+    </div>
+    <div class="form-group">
+        <label>Соцсети (JSON)</label>
+        <textarea id="edit-socials" rows="3">[{"name":"GitHub","url":"https://github.com","icon":"🐙"},{"name":"Telegram","url":"https://t.me","icon":"✈️"}]</textarea>
+    </div>
+    <h3>Проекты</h3>
+    <div id="admin-projects"></div>
+    <button class="btn" id="add-project">+ Добавить проект</button>
+    <br><br>
+    <button class="btn" id="save-all">💾 Сохранить на GitHub</button>
+    <button class="btn" style="background:#888; margin-left:0.5rem;" id="reset-defaults">↺ Сбросить</button>
+    <p id="save-status" style="margin-top:0.5rem;"></p>
+</div>
+
+<script>
+    // ========== НАСТРОЙКИ (ЗАПОЛНИ СВОИМИ ДАННЫМИ) ==========
+    const GITHUB_TOKEN = 'ТВОЙ_ТОКЕН_СЮДА';   // 👈 ВСТАВЬ СВОЙ ТОКЕН
+    const REPO_OWNER = 'твой-логин';           // например 'trent123'
+    const REPO_NAME = 'portfolio';             // название репозитория
+    const FILE_PATH = 'data.json';             // имя файла с данными
+    const ADMIN_PASSWORD = 'Trent_only9';
+
+    const apiBase = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
+
+    // Данные по умолчанию (если файла data.json ещё нет)
+    const defaultData = {
+        name: "Твоё Имя",
+        bio: "Разработчик, дизайнер, создатель цифровых продуктов.",
+        avatar: "https://i.pravatar.cc/300",
+        socials: [
+            { name: "GitHub", url: "https://github.com/", icon: "🐙" },
+            { name: "Telegram", url: "https://t.me/", icon: "✈️" }
+        ],
+        projects: [
+            { title: "Мой лендинг", description: "Одностраничный сайт для портфолио.", url: "https://example.com" }
+        ]
+    };
+
+    let currentData = { ...defaultData };
+    let currentSHA = null; // будем хранить SHA файла для обновления
+
+    // ========== ФУНКЦИИ РЕНДЕРИНГА ==========
+    function renderSite(data) {
+        document.getElementById('profile-avatar').src = data.avatar;
+        document.getElementById('profile-name').textContent = data.name;
+        document.getElementById('profile-bio').textContent = data.bio;
+
+        const socialContainer = document.getElementById('social-container');
+        socialContainer.innerHTML = '';
+        data.socials.forEach(s => {
+            const a = document.createElement('a');
+            a.href = s.url;
+            a.className = 'social-btn';
+            a.target = '_blank';
+            a.rel = 'noopener';
+            a.innerHTML = `${s.icon || '🔗'} ${s.name}`;
+            socialContainer.appendChild(a);
+        });
+
+        const projectsContainer = document.getElementById('projects-container');
+        projectsContainer.innerHTML = '';
+        data.projects.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'project-card';
+            card.innerHTML = `
+                <h3>${p.title}</h3>
+                <p>${p.description}</p>
+                <a href="${p.url}" target="_blank" rel="noopener" class="project-link">Открыть →</a>
+            `;
+            projectsContainer.appendChild(card);
+        });
+    }
+
+    // Загрузка данных с GitHub
+    async function loadFromGitHub() {
+        try {
+            const response = await fetch(apiBase, {
+                headers: GITHUB_TOKEN ? { Authorization: `token ${GITHUB_TOKEN}` } : {}
+            });
+            if (!response.ok) {
+                if (response.status === 404) {
+                    // файла ещё нет — используем defaultData и создадим его при первом сохранении
+                    console.warn('data.json не найден, используются данные по умолчанию');
+                    return { ...defaultData, _sha: null };
+                }
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const fileInfo = await response.json();
+            const content = JSON.parse(atob(fileInfo.content));
+            return { ...content, _sha: fileInfo.sha };
+        } catch (error) {
+            console.error('Ошибка загрузки данных:', error);
+            alert('Не удалось загрузить данные. Проверьте токен и подключение.');
+            return { ...defaultData, _sha: null };
+        }
+    }
+
+    // Сохранение данных на GitHub
+    async function saveToGitHub(data) {
+        const statusElem = document.getElementById('save-status');
+        statusElem.textContent = '⏳ Сохраняю...';
+
+        const content = JSON.stringify(data, null, 2);
+        const body = {
+            message: 'Обновление портфолио через админку',
+            content: btoa(unescape(encodeURIComponent(content))), // корректное кодирование в base64
+        };
+        if (currentSHA) {
+            body.sha = currentSHA;
+        }
+
+        try {
+            const response = await fetch(apiBase, {
+                method: 'PUT',
+                headers: {
+                    Authorization: `token ${GITHUB_TOKEN}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.message || 'Ошибка сохранения');
+            }
+
+            const result = await response.json();
+            currentSHA = result.content.sha;
+            statusElem.textContent = '✅ Изменения сохранены! Сайт обновится через пару минут.';
+            statusElem.style.color = 'green';
+        } catch (error) {
+            console.error(error);
+            statusElem.textContent = '❌ Ошибка: ' + error.message;
+            statusElem.style.color = 'red';
+        }
+    }
+
+    // ========== ИНИЦИАЛИЗАЦИЯ ==========
+    (async () => {
+        const data = await loadFromGitHub();
+        currentSHA = data._sha;
+        delete data._sha;
+        currentData = data;
+        renderSite(currentData);
+    })();
+
+    // ========== АДМИНКА ==========
+    const adminBtn = document.getElementById('admin-btn');
+    const modal = document.getElementById('password-modal');
+    const closeModal = document.getElementById('close-modal');
+    const passwordInput = document.getElementById('password-input');
+    const submitPassword = document.getElementById('submit-password');
+    const loginError = document.getElementById('login-error');
+    const adminPanel = document.getElementById('admin-panel');
+    const closeAdminBtn = document.getElementById('close-admin');
+
+    adminBtn.addEventListener('click', () => {
+        modal.classList.add('active');
+        passwordInput.value = '';
+        loginError.style.display = 'none';
+    });
+    closeModal.addEventListener('click', () => modal.classList.remove('active'));
+    closeAdminBtn.addEventListener('click', () => adminPanel.classList.remove('active'));
+
+    submitPassword.addEventListener('click', () => {
+        if (passwordInput.value === ADMIN_PASSWORD) {
+            modal.classList.remove('active');
+            adminPanel.classList.add('active');
+            buildAdminForm(currentData);
+        } else {
+            loginError.style.display = 'block';
+        }
+    });
+    passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') submitPassword.click();
+    });
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('active');
+    });
+
+    function buildAdminForm(data) {
+        document.getElementById('edit-name').value = data.name;
+        document.getElementById('edit-bio').value = data.bio;
+        document.getElementById('edit-avatar').value = data.avatar;
+        document.getElementById('edit-socials').value = JSON.stringify(data.socials, null, 2);
+
+        const container = document.getElementById('admin-projects');
+        container.innerHTML = '';
+        data.projects.forEach((proj, idx) => addProjectToAdmin(proj, idx));
+    }
+
+    function addProjectToAdmin(proj, index) {
+        const div = document.createElement('div');
+        div.className = 'project-item';
+        div.dataset.index = index;
+        div.innerHTML = `
+            <button class="remove-btn remove-project">×</button>
+            <div class="form-group"><label>Название</label><input type="text" class="proj-title" value="${escapeHtml(proj.title)}"></div>
+            <div class="form-group"><label>Описание</label><textarea class="proj-desc" rows="2">${escapeHtml(proj.description)}</textarea></div>
+            <div class="form-group"><label>Ссылка</label><input type="text" class="proj-url" value="${escapeHtml(proj.url)}"></div>
+        `;
+        document.getElementById('admin-projects').appendChild(div);
+        div.querySelector('.remove-project').addEventListener('click', () => div.remove());
+    }
+
+    function escapeHtml(text) {
+        return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    document.getElementById('add-project').addEventListener('click', () => {
+        addProjectToAdmin({ title: '', description: '', url: '' }, Date.now());
+    });
+
+    document.getElementById('save-all').addEventListener('click', async () => {
+        const newData = {
+            name: document.getElementById('edit-name').value,
+            bio: document.getElementById('edit-bio').value,
+            avatar: document.getElementById('edit-avatar').value,
+            socials: [],
+            projects: []
+        };
+        try {
+            newData.socials = JSON.parse(document.getElementById('edit-socials').value);
+        } catch(e) {
+            alert('Ошибка в JSON соцсетей. Проверьте формат.');
+            return;
+        }
+
+        document.querySelectorAll('.project-item').forEach(item => {
+            newData.projects.push({
+                title: item.querySelector('.proj-title').value,
+                description: item.querySelector('.proj-desc').value,
+                url: item.querySelector('.proj-url').value
+            });
+        });
+
+        // Сохраняем на GitHub
+        await saveToGitHub(newData);
+        // Обновляем локальные данные и перерисовываем
+        currentData = newData;
+        renderSite(currentData);
+    });
+
+    document.getElementById('reset-defaults').addEventListener('click', async () => {
+        if (confirm('Сбросить всё до стандартных настроек и сохранить на GitHub?')) {
+            await saveToGitHub(defaultData);
+            currentData = { ...defaultData };
+            renderSite(currentData);
+            buildAdminForm(currentData);
+        }
+    });
+</script>
+</body>
+                    </html>
