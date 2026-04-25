@@ -1,0 +1,16 @@
+{
+  "name": "Alouzee",
+  "bio": "Делаю простые и удобные вещи для веба. Открыт к новым проектам и сотрудничеству",
+  "avatar": "https://pin.it/4kcBBEstJ",
+  "socials": [
+    { "name": "GitHub", "url": "https://github.com/AloUzee", "icon": "🐙" },
+    { "name": "Telegram", "url": "t.me/Alouzee", "icon": "✈️" }
+  ],
+  "projects": [
+    {
+      "title": "Мой проект",
+      "description": "Описание проекта",
+      "url": "https://example.com"
+    }
+  ]
+}
